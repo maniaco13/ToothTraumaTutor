@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tooth Trauma Tutor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Existing Shake */
+      @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+      }
+      .animate-shake { animation: shake 0.5s infinite; }
+      
+      /* Existing Throb */
+      @keyframes throb {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+      }
+      .animate-throb { animation: throb 1s infinite; }
+      
+      /* Existing Bubble (for bubbles effect) */
+      @keyframes bubble {
+        0% { transform: translateY(0) scale(0.5); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+      }
+      .bubble {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        animation: bubble 1s infinite;
+      }
+
+      /* NEW: Shiver (Fast low amplitude shake for cold/pain) */
+      @keyframes shiver {
+        0% { transform: translate(0, 0); }
+        25% { transform: translate(2px, 2px); }
+        50% { transform: translate(-2px, -2px); }
+        75% { transform: translate(2px, -2px); }
+        100% { transform: translate(0, 0); }
+      }
+      .animate-shiver { animation: shiver 0.1s infinite; }
+
+      /* NEW: Sway (Dizzy/Numb) */
+      @keyframes sway {
+        0%, 100% { transform: rotate(-5deg); }
+        50% { transform: rotate(5deg); }
+      }
+      .animate-sway { animation: sway 3s infinite ease-in-out; }
+
+      /* NEW: Jolt (Sudden Shock) */
+      @keyframes jolt {
+        0%, 100% { transform: scale(1); }
+        25% { transform: scale(1.15) rotate(3deg); }
+        50% { transform: scale(0.95) rotate(-3deg); }
+        75% { transform: scale(1.05) rotate(1deg); }
+      }
+      .animate-jolt { animation: jolt 0.4s ease-in-out infinite; }
+
+      /* NEW: Fumes (for acid effect) */
+      @keyframes fume-rise {
+        0% { transform: translateY(0) scale(0.5) translateX(0); opacity: 0; }
+        50% { opacity: 0.6; }
+        100% { transform: translateY(-40px) scale(2) translateX(10px); opacity: 0; }
+      }
+      .fume {
+        position: absolute;
+        background: #84cc16; /* Lime green */
+        border-radius: 50%;
+        filter: blur(4px);
+        animation: fume-rise 2s infinite;
+      }
+
+      /* NEW: Sparkle (for clean/relief) */
+      @keyframes sparkle-twinkle {
+        0% { transform: scale(0) rotate(0deg); opacity: 0; }
+        50% { transform: scale(1) rotate(180deg); opacity: 1; }
+        100% { transform: scale(0) rotate(360deg); opacity: 0; }
+      }
+      .sparkle {
+        position: absolute;
+        color: #fcd34d;
+        animation: sparkle-twinkle 1.5s infinite;
+      }
+      
+      /* NEW: Electric Zap */
+      @keyframes zap-flash {
+        0%, 100% { opacity: 0; }
+        10%, 90% { opacity: 1; }
+      }
+      .zap-line {
+        animation: zap-flash 0.2s infinite alternate;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-100 text-slate-800 antialiased">
+    <div id="root"></div>
+  </body>
+</html>
