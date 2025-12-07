@@ -3,13 +3,14 @@ import ToothCharacter from './components/ToothCharacter';
 import InfoPanel from './components/InfoPanel';
 import { RemedyType, ToothState, ReactionResponse, ToothCondition } from './types';
 import { getRemedyReaction } from './services/geminiService';
-import { Beaker, FlaskConical, Droplet, Ban, Info, Sparkles, Waves, Snowflake, Zap, Bone, Search, ChevronDown, Check } from 'lucide-react';
+import { Beaker, FlaskConical, Droplet, Ban, Info, Sparkles, Waves, Snowflake, Zap, Bone, Search, ChevronDown, Check, Sliders } from 'lucide-react';
 
 const App: React.FC = () => {
   const [condition, setCondition] = useState<ToothCondition>('BROKEN');
   const [selectedRemedy, setSelectedRemedy] = useState<string>(RemedyType.NONE);
   const [customInput, setCustomInput] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [sensitivity, setSensitivity] = useState<number>(50); // 0-100 scale, 50 is Normal (1x)
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const [toothState, setToothState] = useState<ToothState>({
@@ -21,12 +22,31 @@ const App: React.FC = () => {
   const [reactionData, setReactionData] = useState<ReactionResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Derived sensitivity multiplier (0.5x to 1.5x)
+  const sensitivityMultiplier = 0.5 + (sensitivity / 100);
+
+  // Helper to calculate effective pain
+  const calculateEffectivePain = (basePain: number) => {
+     return Math.min(10, Math.max(0, Math.round(basePain * sensitivityMultiplier)));
+  };
+
   // Initial load
   useEffect(() => {
     // Reset when condition changes
     handleRemedyChange(RemedyType.NONE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition]);
+
+  // Sync Pain Level with Sensitivity Slider
+  useEffect(() => {
+    const basePain = reactionData ? reactionData.painLevel : (condition === 'BROKEN' ? 5 : 3);
+    const adjustedPain = calculateEffectivePain(basePain);
+
+    setToothState(prev => {
+        if (prev.painLevel === adjustedPain) return prev;
+        return { ...prev, painLevel: adjustedPain };
+    });
+  }, [sensitivity, reactionData, condition]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -117,12 +137,14 @@ const App: React.FC = () => {
             break;
     }
 
-    setToothState({
-        painLevel: 5, // placeholder until API returns
+    setToothState(prev => ({
+        ...prev,
         mood: tempMood,
         animation: tempAnim,
         visualEffect: tempEffect
-    });
+        // painLevel is handled by useEffect slightly after, but we can set a temp default if needed.
+        // The useEffect will overwrite this almost instantly based on previous reactionData or default.
+    }));
 
     // Fetch educational data with condition context
     const reaction = await getRemedyReaction(remedy, condition);
@@ -156,7 +178,7 @@ const App: React.FC = () => {
 
         return {
             ...prev,
-            painLevel: reaction.painLevel,
+            // Pain Level is updated by the useEffect dependent on reactionData
             mood: reaction.mood,
             animation: nextAnim,
             visualEffect: nextEffect
@@ -185,6 +207,12 @@ const App: React.FC = () => {
   const filteredRemedies = Object.values(RemedyType).filter(r => 
       r !== RemedyType.NONE && r.toLowerCase().includes(customInput.toLowerCase())
   );
+
+  // Derive adjusted reaction for display
+  const displayedReaction = reactionData ? {
+      ...reactionData,
+      painLevel: calculateEffectivePain(reactionData.painLevel)
+  } : null;
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col items-center py-10 px-4">
@@ -222,6 +250,32 @@ const App: React.FC = () => {
                     <Bone className="w-4 h-4 mr-2" />
                     <span className="font-bold text-sm">Cavity</span>
                 </button>
+            </div>
+
+            {/* Sensitivity Slider */}
+            <div className="w-full max-w-[400px] bg-white px-5 py-3 rounded-xl shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center text-slate-600">
+                        <Sliders className="w-4 h-4 mr-2" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Nerve Sensitivity</span>
+                    </div>
+                    <span className="text-xs font-mono text-slate-400">
+                        {sensitivity < 33 ? 'RESILIENT' : sensitivity > 66 ? 'HYPERSENSITIVE' : 'NORMAL'}
+                    </span>
+                </div>
+                <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={sensitivity} 
+                    onChange={(e) => setSensitivity(parseInt(e.target.value))}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-500"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold uppercase">
+                    <span>Numb</span>
+                    <span>Standard</span>
+                    <span>Raw</span>
+                </div>
             </div>
 
             {/* The Stage */}
@@ -353,7 +407,7 @@ const App: React.FC = () => {
 
         {/* Right Column: Educational Output */}
         <div className="flex flex-col items-center w-full lg:w-1/2 z-0">
-            <InfoPanel reaction={reactionData} loading={loading} />
+            <InfoPanel reaction={displayedReaction} loading={loading} />
             
             {/* Quick Tips */}
             <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-md">
